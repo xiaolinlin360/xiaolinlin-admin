@@ -54,3 +54,49 @@ export const getProfile = () => {
 export const updateProfile = (data: { name: string; imgurl: string }) => {
   return http.post<any, ProfileRes>('/user/updateProfile', data)
 }
+
+// --- 用户管理 ---
+
+export interface UserRow {
+  id: string
+  name: string
+  email: string | null
+  phone: string | null
+  permission: number
+  imgurl: string
+  created_at: string
+}
+
+interface UserListRes {
+  code: number
+  message: string
+  data: UserRow[]
+}
+export const getUsers = () => {
+  return http.post<any, UserListRes>('/user/getUsers')
+}
+
+export interface AddUserPayload {
+  name: string
+  email: string
+  password: string
+  phone?: string | null
+  permission: number
+}
+interface UserRowRes {
+  code: number
+  message: string
+  data: UserRow
+}
+export const addUser = (data: AddUserPayload) => {
+  return http.post<any, UserRowRes>('/user/addUser', data)
+}
+
+interface UpdatePermissionRes {
+  code: number
+  message: string
+  data: { id: string; name: string; permission: number }
+}
+export const updatePermission = (data: { id: string; permission: number }) => {
+  return http.post<any, UpdatePermissionRes>('/user/updatePermission', data)
+}

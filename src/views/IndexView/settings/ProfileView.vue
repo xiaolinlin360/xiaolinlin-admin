@@ -94,7 +94,7 @@ const handleAvatarChange = (uploadFile: { raw?: File }) => {
   avatarFile.value = raw
   avatarPreview.value = avatarObjectUrl
 }
-// 这个有个问题，未来优化可以将他封装成有个专门的上传接口？...？算了以后看看
+// 这个有个问题，未来优化可以将他封装成有个专门的上传接口？...？算了以后看看，还有频繁上传会不会覆盖？，还有文件累计问题？？
 const uploadAvatar = async (file: File) => {
   const formData = new FormData()
   formData.append('file', file)
