@@ -100,3 +100,38 @@ interface UpdatePermissionRes {
 export const updatePermission = (data: { id: string; permission: number }) => {
   return http.post<any, UpdatePermissionRes>('/user/updatePermission', data)
 }
+
+// --- 密码与绑定 ---
+
+interface SimpleRes {
+  code: number
+  message: string
+  data: null
+}
+
+/** 方式一：用原密码改密码 */
+export const updatePassword = (data: { oldPassword: string; newPassword: string }) => {
+  return http.post<any, SimpleRes>('/user/updatePassword', data)
+}
+
+export type CodeChannel = 'email' | 'phone'
+
+interface SendCodeRes {
+  code: number
+  message: string
+  /** target 是打码后的接收方；code 只在非生产环境返回，方便本地调试 */
+  data: { target: string; code?: string }
+}
+/** 方式二/三：把验证码发到当前用户的邮箱/手机 */
+export const sendCode = (channel: CodeChannel) => {
+  return http.post<any, SendCodeRes>('/user/sendCode', { channel })
+}
+
+/** 方式二/三：用验证码重置密码 */
+export const resetPasswordByCode = (data: {
+  channel: CodeChannel
+  code: string
+  newPassword: string
+}) => {
+  return http.post<any, SimpleRes>('/user/resetPasswordByCode', data)
+}
