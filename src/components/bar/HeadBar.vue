@@ -38,13 +38,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Message, UserFilled, Sunny, Moon } from '@element-plus/icons-vue'
 import { useDark, useToggle } from '@vueuse/core'
 import MessageDrawer from '@/components/MessageDrawer/MessageDrawer.vue'
 import { useUserStore } from '@/stores/index'
+import { toAbsoluteUrl } from '@/utils/asset'
 // --- Props 定义 (可通过父组件传入) ---
 interface Props {
   title?: string
@@ -59,13 +60,14 @@ const props = withDefaults(defineProps<Props>(), {
 // --- 响应式数据区 ---
 // 使用 TS 泛型声明 ref 类型
 const logoUrl = ref<string>(props.initialLogoUrl)
-const avatarUrl = ref<string>(props.initialAvatarUrl)
 const isDark = useDark() // 当前主题是否为暗黑
 const toggleDark = useToggle(isDark) // 切换主题
 const drawerVisible = ref(false) // 私信抽屉是否可见
 // const messageDrawerRef = ref<MessageDrawer>() // 私信抽屉实例引用
 // --- 登录态 ---
 const userStore = useUserStore()
+// 头像从 store 取（个人主页保存后会同步更新）
+const avatarUrl = computed(() => toAbsoluteUrl(userStore.userData.imgurl || ''))
 const router = useRouter()
 // --- 事件处理 ---
 // 退出登录：清 token + 清用户信息 + 回登录页

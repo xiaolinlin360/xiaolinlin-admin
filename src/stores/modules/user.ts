@@ -6,6 +6,10 @@ export interface UserInfo {
   id?: string
   name?: string
   email?: string | null
+  phone?: string | null
+  /** 权限等级：数字越小权限越大，0 为最高 */
+  permission?: number
+  imgurl?: string
   created_at?: string
 }
 

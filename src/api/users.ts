@@ -17,6 +17,10 @@ export interface LoginUser {
   id: string
   name: string
   email: string | null
+  phone: string | null
+  /** 权限等级：数字越小权限越大，0 为最高 */
+  permission: number
+  imgurl: string
   created_at: string
 }
 
@@ -31,4 +35,22 @@ interface LoginRes {
 }
 export const login = (data: { name: string; password: string }) => {
   return http.post<any, LoginRes>('/user/login', data)
+}
+
+// --- 个人主页 ---
+
+/** 个人信息（结构和登录返回的 user 一致） */
+export type Profile = LoginUser
+
+interface ProfileRes {
+  code: number
+  message: string
+  data: Profile
+}
+export const getProfile = () => {
+  return http.post<any, ProfileRes>('/user/getProfile')
+}
+
+export const updateProfile = (data: { name: string; imgurl: string }) => {
+  return http.post<any, ProfileRes>('/user/updateProfile', data)
 }
