@@ -8,7 +8,9 @@ import FilesView from '@/views/IndexView/FilesView.vue'
 import GalleryView from '@/views/IndexView/GalleryView.vue'
 import NotesView from '@/views/IndexView/NotesView.vue'
 import ResourcesView from '@/views/IndexView/ResourcesView.vue'
-import SettingsView from '@/views/IndexView/SettingsView.vue'
+import SettingsProfileView from '@/views/IndexView/settings/ProfileView.vue'
+import SettingsSecurityView from '@/views/IndexView/settings/SecurityView.vue'
+import SettingsUsersView from '@/views/IndexView/settings/UsersView.vue'
 import BlogView from '@/views/IndexView/BlogView.vue'
 import LoginView from '@/views/login.vue'
 
@@ -51,9 +53,26 @@ const routes = [
         component: ResourcesView,
       },
       {
+        // 设置拆成三个子页，父级不渲染组件，直接复用 IndexView 的 router-view
         path: '/settings',
-        name: 'Settings',
-        component: SettingsView,
+        redirect: '/settings/profile',
+        children: [
+          {
+            path: '/settings/profile',
+            name: 'SettingsProfile',
+            component: SettingsProfileView,
+          },
+          {
+            path: '/settings/security',
+            name: 'SettingsSecurity',
+            component: SettingsSecurityView,
+          },
+          {
+            path: '/settings/users',
+            name: 'SettingsUsers',
+            component: SettingsUsersView,
+          },
+        ],
       },
     ],
   },

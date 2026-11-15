@@ -1,23 +1,42 @@
 <template>
   <aside class="menu-bar">
     <ul class="menu-list">
-      <li
-        v-for="item in menuList"
-        :key="item.path"
-        class="menu-item"
-        :class="{ active: currentPath === item.path }"
-        @click="handleMenuClick(item.path)">
-        <el-icon class="menu-icon" :size="18">
-          <component :is="item.icon" />
-        </el-icon>
-        <span class="menu-title">{{ item.name }}</span>
+      <li v-for="item in menuList" :key="item.path">
+        <!-- 一级菜单 -->
+        <div
+          class="menu-item"
+          :class="{ active: currentPath === item.path }"
+          @click="handleMenuClick(item)">
+          <el-icon class="menu-icon" :size="18">
+            <component :is="item.icon" />
+          </el-icon>
+          <span class="menu-title">{{ item.name }}</span>
+          <el-icon v-if="item.children" class="menu-arrow" :class="{ open: isOpen(item) }">
+            <ArrowDown />
+          </el-icon>
+        </div>
+
+        <!-- 二级菜单 -->
+        <ul v-if="item.children" v-show="isOpen(item)" class="sub-list">
+          <li
+            v-for="child in item.children"
+            :key="child.path"
+            class="menu-item sub-item"
+            :class="{ active: currentPath === child.path }"
+            @click="router.push(child.path)">
+            <el-icon class="menu-icon" :size="15">
+              <component :is="child.icon" />
+            </el-icon>
+            <span class="menu-title">{{ child.name }}</span>
+          </li>
+        </ul>
       </li>
     </ul>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   HomeFilled,
@@ -27,13 +46,18 @@ import {
   EditPen,
   Grid,
   Setting,
+  User,
+  Lock,
+  UserFilled,
+  ArrowDown,
 } from '@element-plus/icons-vue'
 
-// 定义菜单数据结构
+// 定义菜单数据结构：有 children 就是可展开的父菜单
 interface MenuItem {
   name: string
   path: string
   icon: any
+  children?: MenuItem[]
 }
 
 // 菜单配置
@@ -44,7 +68,16 @@ const menuList: MenuItem[] = [
   { name: '摄影图库', path: '/gallery', icon: Camera },
   { name: '随笔随记', path: '/notes', icon: EditPen },
   { name: '资源分享', path: '/resources', icon: Grid },
-  { name: '设置', path: '/settings', icon: Setting },
+  {
+    name: '设置',
+    path: '/settings',
+    icon: Setting,
+    children: [
+      { name: '个人主页', path: '/settings/profile', icon: User },
+      { name: '密码与绑定', path: '/settings/security', icon: Lock },
+      { name: '用户管理', path: '/settings/users', icon: UserFilled },
+    ],
+  },
 ]
 
 const route = useRoute()
@@ -53,9 +86,28 @@ const router = useRouter()
 // 当前激活的路由路径
 const currentPath = computed(() => route.path)
 
-// 点击跳转
-const handleMenuClick = (path: string) => {
-  router.push(path)
+// 当前展开的父菜单（存它的 path）
+const opened = ref('')
+
+// 进入子页面时自动展开对应的父菜单
+watch(
+  () => route.path,
+  (path) => {
+    const parent = menuList.find((item) => item.children?.some((child) => child.path === path))
+    if (parent) opened.value = parent.path
+  },
+  { immediate: true }
+)
+
+const isOpen = (item: MenuItem) => opened.value === item.path
+
+// 点一级菜单：有子菜单就展开/收起，没有就跳转
+const handleMenuClick = (item: MenuItem) => {
+  if (item.children) {
+    opened.value = isOpen(item) ? '' : item.path
+    return
+  }
+  router.push(item.path)
 }
 </script>
 
@@ -129,6 +181,31 @@ const handleMenuClick = (path: string) => {
   .menu-title {
     flex: 1;
     line-height: 1;
+  }
+
+  // 父菜单右侧的展开箭头
+  .menu-arrow {
+    flex: none;
+    font-size: 12px;
+    transition: transform 0.2s;
+
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+// 二级菜单
+.sub-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px 0;
+
+  .sub-item {
+    padding: 10px 16px 10px 42px; // 左侧留出缩进
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-weight: 400;
   }
 }
 </style>
