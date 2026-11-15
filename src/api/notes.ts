@@ -12,6 +12,7 @@ export interface NoteItem {
 // --- 获取笔记列表 ---
 interface NoteListRes {
   code: number
+  message: string
   data: {
     notes: NoteItem[]
     pageNum: number
@@ -30,6 +31,7 @@ export const getNotes = (data: {
 // --- 获取笔记总数 ---
 interface TotalNoteRes {
   code: number
+  message: string
   data: {
     total: number
   }
@@ -46,6 +48,7 @@ interface CreateNoteReq {
 }
 interface CreateNoteRes {
   code: number
+  message: string
   data: NoteItem
 }
 export const insertNotes = (data: CreateNoteReq) => {
@@ -61,6 +64,7 @@ interface UpdateNoteReq {
 }
 interface UpdateNoteRes {
   code: number
+  message: string
   data: NoteItem
 }
 export const updateNotes = (data: UpdateNoteReq) => {
@@ -70,9 +74,8 @@ export const updateNotes = (data: UpdateNoteReq) => {
 // --- 删除笔记 ---
 interface DeleteNoteRes {
   code: number
-  data: {
-    message: string
-  }
+  message: string
+  data: null
 }
 export const deleteNotes = (id: string) => {
   return http.post<any, DeleteNoteRes>('/notes/deleteNotes', { id })

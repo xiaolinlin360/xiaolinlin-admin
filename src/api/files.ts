@@ -13,6 +13,7 @@ export interface FileItem {
 }
 interface FileRes {
   code: number
+  message: string
   data: {
     files: FileItem[]
     pageNum: number
@@ -33,12 +34,13 @@ export const getFiles = (data: {
 // 获取文件总数
 interface TotalFileRes {
   code: number
+  message: string
   data: {
     total: number
   }
 }
-export const getTotalFile = () => {
-  return http.post<any, TotalFileRes>('/files/getTotalFile')
+export const getTotalFile = (data?: { file_urls?: string | string[] }) => {
+  return http.post<any, TotalFileRes>('/files/getTotalFile', data || {})
 }
 
 // 获取 data 目录占用（总览页「本地文件」卡片用）
@@ -55,18 +57,10 @@ export const getStorageSize = () => {
   return http.post<any, StorageSizeRes>('/files/getStorageSize')
 }
 
-//上传文件
-interface FormDataFile {
-  gallery_id?: string | null
-  article_id?: string | null
-  file: File
-}
-interface FormDataFileRes {
-  code: number
-  data: {
-    message: string
-  }
-}
-export const uploadFile = (data: FormDataFile) => {
-  return http.post<any, FormDataFileRes>('/files/upload', data)
-}
+/**
+ * 上传文件统一走 multer 的 multipart 接口：POST /files/uploadFile，字段名 file。
+ *
+ * 这里不再包一个 api 函数 —— 上传要带进度/超时/取消，调用方（文章抽屉、
+ * 图库抽屉、随笔编辑器）各自用 FormData 直接调 http 更清晰。
+ * 之前的 uploadFile 打的是不存在的 /files/upload，属于死代码，已删除。
+ */

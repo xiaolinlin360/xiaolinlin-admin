@@ -143,7 +143,7 @@ const handleRead = async (item: getMessageRef) => {
   try {
     const res = await readMessage({ id: item.id })
     item.is_read = true
-    ElMessage.success(res.data.message)
+    ElMessage.success(res.message)
   } catch (error) {
     console.error('标记已读失败', error)
     ElMessage.error('标记已读失败')

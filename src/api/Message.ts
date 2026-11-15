@@ -37,7 +37,8 @@ export const getTotalMessage = () => {
 //标记已读
 export interface ReadMessageRes {
   code: number
-  data: { message: string; is_read: boolean }
+  message: string
+  data: { is_read: boolean }
 }
 export const readMessage = (data: { id: string }) => {
   return http.post<any, ReadMessageRes>('/messages/read', data)

@@ -9,34 +9,30 @@ export interface Labels {
 interface getLabelsRef {
   data: Labels[]
   code: number
+  message: string
 }
 export const getLabels = (params?: { keyword?: string }) => {
   return http.post<any, getLabelsRef>('/labels/getLabels', params)
 }
 
-// 插入标签
-interface insertLabelsRef {
-  data: { message: string }
+/** 只返回提示语、没有载荷的操作响应 */
+interface ActionRes {
   code: number
+  message: string
+  data: null
 }
+
+// 插入标签
 export const insertLabels = (data: { label_name: string }) => {
-  return http.post<any, insertLabelsRef>('/labels/insertLabels', data)
+  return http.post<any, ActionRes>('/labels/insertLabels', data)
 }
 
 // 更新标签
-interface updateLabelsRef {
-  data: { message: string }
-  code: number
-}
 export const updateLabels = (data: { id: string; label_name: string }) => {
-  return http.post<any, updateLabelsRef>('/labels/updateLabels', data)
+  return http.post<any, ActionRes>('/labels/updateLabels', data)
 }
 
 // 删除标签
-interface deleteLabelsRef {
-  data: { message: string }
-  code: number
-}
 export const deleteLabels = (data: { id: string }) => {
-  return http.post<any, deleteLabelsRef>('/labels/deleteLabels', data)
+  return http.post<any, ActionRes>('/labels/deleteLabels', data)
 }

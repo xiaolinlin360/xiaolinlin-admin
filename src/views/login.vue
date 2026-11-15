@@ -78,7 +78,7 @@ const handleSubmit = async () => {
   try {
     const res = await login({ name: form.name.trim(), password: form.password })
     userStore.setUserData(res.data.user)
-    userStore.setToken(res.token)
+    userStore.setToken(res.data.token)
     ElMessage.success('登录成功')
 
     // 回到被拦截前想去的页面；没有就进总览

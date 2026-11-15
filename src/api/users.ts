@@ -22,10 +22,10 @@ export interface LoginUser {
 
 interface LoginRes {
   code: number
-  /** token 在响应的顶层，不在 data 里（后端就是这么返回的） */
-  token: string
+  message: string
+  /** token 放进了 data，信封统一为三件套 */
   data: {
-    message: string
+    token: string
     user: LoginUser
   }
 }

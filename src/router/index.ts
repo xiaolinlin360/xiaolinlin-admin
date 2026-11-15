@@ -68,10 +68,6 @@ const router = createRouter({
 
 /**
  * 全局守卫：后台所有页面都要登录。
- *
- * 为什么用 to.matched.some(...) 而不是直接读 to.meta.requiresAuth：
- * 父路由上挂一次 requiresAuth，所有子路由就都受保护，
- * 以后往 children 里加页面不需要再记得补 meta。
  */
 router.beforeEach((to) => {
   const userStore = useUserStore()

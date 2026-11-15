@@ -106,15 +106,13 @@ const confirmCreate = async () => {
   if (!inputValue.value.trim()) return
 
   try {
-    const res = await insertSubset({ category_id: category.value, name: inputValue.value })
-    if (res.code === 200) {
-      ElMessage.success('新建成功')
-    } else {
-      ElMessage.error(res.data[0].message || '新建失败')
-    }
-    a()
-  } catch (error: any) {
-    ElMessage.error(error.response.data.data.message || '新建失败')
+    // 失败时 http 拦截器会弹出后端的 message，这里不用再手写提示
+    await insertSubset({ category_id: category.value, name: inputValue.value })
+    ElMessage.success('新建成功')
+    await a()
+  } catch (error) {
+    // 提示已由拦截器统一处理
+    console.error('新建分组失败', error)
   } finally {
     dialogVisible.value = false
   }
@@ -125,8 +123,8 @@ const subsetDelete = async (id: string) => {
   try {
     subsetDeleteArr.value.push(id)
     subsets.value = subsets.value.filter((item) => !subsetDeleteArr.value.includes(item.id))
-  } catch (error: any) {
-    ElMessage.error(error.response.data.data.message || '删除失败')
+  } catch (error) {
+    console.error('删除分组失败', error)
   }
 }
 </script>
