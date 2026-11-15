@@ -135,3 +135,18 @@ export const resetPasswordByCode = (data: {
 }) => {
   return http.post<any, SimpleRes>('/user/resetPasswordByCode', data)
 }
+
+/** 更换绑定：把验证码发到「新」邮箱/手机 */
+export const sendContactCode = (data: { channel: CodeChannel; target: string }) => {
+  return http.post<any, SendCodeRes>('/user/sendContactCode', data)
+}
+
+interface UpdateContactRes {
+  code: number
+  message: string
+  data: { email: string | null; phone: string | null }
+}
+/** 更换绑定：验证码校验通过后写入新地址 */
+export const updateContact = (data: { channel: CodeChannel; target: string; code: string }) => {
+  return http.post<any, UpdateContactRes>('/user/updateContact', data)
+}
