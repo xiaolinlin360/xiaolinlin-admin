@@ -28,7 +28,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          # source 是你打包后的产物路径
+          # source 是打包后的产物路径
           source: 'dist/*'
           # target 是服务器上 Nginx 配置的 root 目录
           target: '/var/www/xiaolinlin/admin'
