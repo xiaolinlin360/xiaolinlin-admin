@@ -4,27 +4,6 @@
       <span class="title">留言 {{ total }}</span>
     </div>
 
-    <!-- 发表留言：只要称呼 + 内容 -->
-    <div class="write-box">
-      <div class="write-row">
-        <el-input
-          v-model="form.nickname"
-          maxlength="30"
-          placeholder="你的称呼"
-          class="nick-input" />
-        <el-button type="primary" size="small" :loading="submitting" @click="handleSubmit">
-          发表
-        </el-button>
-      </div>
-      <el-input
-        v-model="form.content"
-        type="textarea"
-        :rows="2"
-        maxlength="500"
-        placeholder="说点什么..."
-        class="content-input" />
-    </div>
-
     <!-- 留言列表：内部独立滚动 -->
     <div class="guestbook-list">
       <div v-for="item in list" :key="item.id" class="guestbook-item">
@@ -34,9 +13,43 @@
           <div class="header-row">
             <span class="nickname">{{ item.nickname }}</span>
             <span class="time">{{ formatTime(item.created_at) }}</span>
-            <el-icon class="delete-icon" @click="handleDelete(item.id)"><Delete /></el-icon>
+
+            <div class="ops">
+              <!-- 回复和删除都只有博主本人（权限 0）能用，后端这两个接口同样限制 -->
+              <el-button v-if="isOwner" link type="primary" @click="openReply(item)">
+                {{ item.reply ? '改回复' : '回复' }}
+              </el-button>
+              <el-icon v-if="isOwner" class="delete-icon" @click="handleDelete(item.id)">
+                <Delete />
+              </el-icon>
+            </div>
           </div>
+
           <p class="content">{{ item.content }}</p>
+
+          <!-- 已经回复过：把回复显示出来 -->
+          <div v-if="item.reply" class="reply">
+            <span class="reply-label">博主回复 · {{ formatTime(item.replied_at ?? '') }}</span>
+            <p class="reply-text">{{ item.reply }}</p>
+          </div>
+
+          <!-- 只有点了「回复」的那条才出现输入框 -->
+          <div v-if="editingId === item.id" class="reply-editor">
+            <el-input
+              v-model="replyText"
+              type="textarea"
+              :rows="2"
+              maxlength="500"
+              placeholder="写点回复..."
+              class="reply-input" />
+            <div class="editor-ops">
+              <span v-if="item.reply" class="tip">清空保存 = 撤掉回复</span>
+              <el-button size="small" @click="editingId = ''">取消</el-button>
+              <el-button size="small" type="primary" :loading="submitting" @click="handleReply(item.id)">
+                保存
+              </el-button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -59,24 +72,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete } from '@element-plus/icons-vue'
 import {
   getGuestbook,
   getTotalGuestbook,
-  insertGuestbook,
   deleteGuestbook,
+  replyGuestbook,
   type Guestbook,
 } from '@/api/guestbook'
+import { useUserStore } from '@/stores/index'
 import formatTime from '@/utils/formatTime'
+
+const userStore = useUserStore()
+// 权限 0 才是博主本人；读者（1）和管理员（2）只让看和删，不给回复
+const isOwner = computed(() => userStore.userData.permission === 0)
 
 const list = ref<Guestbook[]>([])
 const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(5)
 const submitting = ref(false)
-const form = ref({ nickname: '', content: '' })
+
+// 正在回复哪一条（存 id，空字符串表示没在回复）
+const editingId = ref('')
+const replyText = ref('')
 
 const fetchList = async () => {
   const [listRes, totalRes] = await Promise.all([
@@ -92,27 +113,21 @@ const handleSizeChange = () => {
   fetchList()
 }
 
-// 发表留言
-const handleSubmit = async () => {
-  const nickname = form.value.nickname.trim()
-  const content = form.value.content.trim()
+// 点「回复」：打开输入框，已经回过就把旧内容带出来方便改
+const openReply = (item: Guestbook) => {
+  editingId.value = item.id
+  replyText.value = item.reply ?? ''
+}
 
-  if (!nickname) {
-    ElMessage.warning('请填写你的称呼')
-    return
-  }
-  if (!content) {
-    ElMessage.warning('留言内容不能为空')
-    return
-  }
-
+// 保存回复：只更新这一条，不整页刷新，省得列表滚动位置乱跳
+const handleReply = async (id: string) => {
   submitting.value = true
   try {
-    await insertGuestbook({ nickname, content })
-    ElMessage.success('留言成功')
-    form.value = { nickname: '', content: '' }
-    pageNum.value = 1 // 新留言在最前面，回到第一页
-    await fetchList()
+    const { data } = await replyGuestbook(id, replyText.value.trim())
+    const target = list.value.find((item) => item.id === id)
+    if (target) Object.assign(target, data)
+    ElMessage.success(data.reply ? '回复成功' : '回复已撤掉')
+    editingId.value = ''
   } finally {
     submitting.value = false
   }
@@ -155,32 +170,6 @@ onMounted(fetchList)
       font-size: 16px;
       font-weight: 600;
       color: $my-text-main;
-    }
-  }
-
-  /* 写留言 */
-  .write-box {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-bottom: 12px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid $my-border-color;
-
-    .write-row {
-      display: flex;
-      gap: 8px;
-
-      .nick-input {
-        flex: 1;
-      }
-    }
-
-    .content-input {
-      :deep(.el-textarea__inner) {
-        resize: none;
-      }
     }
   }
 
@@ -249,12 +238,18 @@ onMounted(fetchList)
             color: $my-text-main;
           }
 
-          .delete-icon {
+          .ops {
             margin-left: auto;
-            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
 
-            &:hover {
-              color: #f56c6c;
+            .delete-icon {
+              cursor: pointer;
+
+              &:hover {
+                color: #f56c6c;
+              }
             }
           }
         }
@@ -265,6 +260,54 @@ onMounted(fetchList)
           margin: 0;
           line-height: 1.5;
           word-break: break-word;
+        }
+
+        /* 博主回复 */
+        .reply {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          padding: 8px 10px;
+          border-radius: 6px;
+          background-color: var(--el-color-primary-light-9);
+
+          .reply-label {
+            font-size: 12px;
+            color: var(--el-color-primary);
+          }
+
+          .reply-text {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.5;
+            color: $my-text-main;
+            word-break: break-word;
+            white-space: pre-wrap;
+          }
+        }
+
+        /* 回复输入框 */
+        .reply-editor {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+
+          .reply-input :deep(.el-textarea__inner) {
+            resize: none;
+          }
+
+          .editor-ops {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+
+            .tip {
+              margin-right: auto;
+              font-size: 12px;
+              color: $my-text-sub;
+            }
+          }
         }
       }
     }

@@ -1,11 +1,13 @@
 import http from '@/utils/http'
 
-/** 一条留言：只有称呼、内容和时间，没有用户概念 */
+/** 一条留言：称呼 + 内容，可选博主回复（reply 为空表示还没回） */
 export interface Guestbook {
   id: string
   nickname: string
   content: string
   created_at: string
+  reply?: string | null
+  replied_at?: string | null
 }
 
 // 获取留言列表
@@ -50,4 +52,14 @@ interface DeleteGuestbookRes {
 }
 export const deleteGuestbook = (id: string) => {
   return http.post<any, DeleteGuestbookRes>('/guestbooks/deleteGuestbook', { id })
+}
+
+// 回复留言（只有博主能调；reply 传空字符串 = 撤掉回复）
+interface ReplyGuestbookRes {
+  code: number
+  message: string
+  data: { id: string; reply: string | null; replied_at: string | null }
+}
+export const replyGuestbook = (id: string, reply: string) => {
+  return http.post<any, ReplyGuestbookRes>('/guestbooks/reply', { id, reply })
 }

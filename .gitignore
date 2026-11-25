@@ -22,3 +22,4 @@ doc
 *.njsproj
 *.sln
 *.sw?
+.screens
