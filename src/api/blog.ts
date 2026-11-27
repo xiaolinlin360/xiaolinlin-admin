@@ -20,6 +20,10 @@ export interface Article {
   created_at: string
   username_name: string
   labels: Label[]
+  /** 浏览量：前台每打开一次详情 +1 */
+  views: number
+  /** 收藏（点赞）数 */
+  praise_count: number
 }
 
 /** 文章附件（files 表里挂了 article_id 的记录） */

@@ -38,12 +38,14 @@
           <span class="author">所属: {{ article.username_name }}</span>
           <span class="date">{{ formatDate(article.created_at) }}</span>
           <div class="stats">
-            <span class="stat-item"
-              ><el-icon><View /></el-icon> 0</span
-            >
-            <span class="stat-item"
-              ><el-icon><Star /></el-icon> 0</span
-            >
+            <span class="stat-item" title="浏览量">
+              <el-icon><View /></el-icon>
+              {{ article.views ?? 0 }}
+            </span>
+            <span class="stat-item" title="收藏 / 点赞">
+              <el-icon><Star /></el-icon>
+              {{ article.praise_count ?? 0 }}
+            </span>
             <span class="stat-item clickable" title="查看评论" @click="$emit('comment', article)">
               <el-icon><ChatDotRound /></el-icon> 评论
             </span>
