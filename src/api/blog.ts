@@ -132,3 +132,12 @@ interface DeleteArticleReq {
 export const deleteArticle = (id: string) => {
   return http.post<any, DeleteArticleReq>('/article/deleteArticle', { id })
 }
+/** 给某篇文章设置标签（全量替换）：拖拽加标签时，把「现有的 + 新拖的」整份传上去 */
+interface SetLabelsRes {
+  code: number
+  message: string
+  data: { id: string; label_ids: string[] }
+}
+export const setArticleLabels = (id: string, label_ids: string[]) => {
+  return http.post<any, SetLabelsRes>('/article/setArticleLabels', { id, label_ids })
+}

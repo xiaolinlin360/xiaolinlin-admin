@@ -9,7 +9,8 @@
           :article="item"
           @edit="handleEdit"
           @delete="handleDelete"
-          @comment="handleComment" />
+          @comment="handleComment"
+          @add-label="handleAddLabel" />
         <el-empty v-if="!loading && articles.length === 0" description="暂无文章数据" />
       </div>
 
@@ -47,7 +48,9 @@
             class="custom-tag"
             type="info"
             effect="plain"
+            draggable="true"
             @click="handleCopyLabelId(label.id)"
+            @dragstart="handleTagDragStart($event, label.id)"
             @keyup.enter="handleCopyLabelId(label.id)">
             {{ label.label_name }}
           </el-tag>
@@ -91,7 +94,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import ArticleItem from './article-item.vue'
-import { getArticle, getTotalArticle, deleteArticle } from '@/api/blog'
+import { getArticle, getTotalArticle, deleteArticle, setArticleLabels } from '@/api/blog'
 import type { Article } from '@/api/blog'
 import { getLabels, type Labels, insertLabels } from '@/api/labels'
 import DrawerLabel from './drawer-label.vue'
@@ -229,6 +232,29 @@ const handleDelete = async (id: string) => {
     refresh()
   } catch (error) {
     console.error('删除失败', error)
+  }
+}
+
+// 拖动标签时，把标签 id 放进 dataTransfer（卡片那边 drop 时取出来）
+const handleTagDragStart = (e: DragEvent, labelId: string) => {
+  e.dataTransfer?.setData('text/plain', labelId)
+}
+
+// 卡片上松手：把「这篇现有的标签 + 拖过来的」整份提交（后端是全量替换）
+const handleAddLabel = async (article: Article, labelId: string) => {
+  if (article.labels.some((label) => label.id === labelId)) {
+    ElMessage.info('这篇已经有这个标签了')
+    return
+  }
+  try {
+    await setArticleLabels(
+      article.id,
+      [...article.labels.map((label) => label.id), labelId],
+    )
+    ElMessage.success('标签已添加')
+    fetchData() // 重新拉列表，卡片上的标签跟着更新
+  } catch (error) {
+    console.error('添加标签失败', error)
   }
 }
 

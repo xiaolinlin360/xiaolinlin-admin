@@ -1,5 +1,10 @@
 <template>
-  <div class="article-item">
+  <div
+    class="article-item"
+    :class="{ 'is-drag-over': dragOver }"
+    @dragover.prevent="dragOver = true"
+    @dragleave="dragOver = false"
+    @drop.prevent="handleDrop">
     <!-- 左侧封面图 -->
     <div class="cover-wrap">
       <el-image :src="coverUrl" fit="cover" class="cover-img">
@@ -78,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
   Picture,
   View,
@@ -96,11 +101,20 @@ const props = defineProps<{
   article: Article
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'edit', article: Article): void
   (e: 'delete', id: string): void
   (e: 'comment', article: Article): void
+  (e: 'add-label', article: Article, labelId: string): void
 }>()
+
+// 从右侧标签栏拖过来松手：把标签 id 抛给父组件去提交
+const dragOver = ref(false)
+const handleDrop = (e: DragEvent) => {
+  dragOver.value = false
+  const labelId = e.dataTransfer?.getData('text/plain')
+  if (labelId) emit('add-label', props.article, labelId)
+}
 
 const coverUrl = computed(() => {
   // 后端在列表里已经把封面文件 join 出来了（字段名是 url，形如 /data/<id>/<name>）
@@ -154,6 +168,12 @@ const copyLabelId = async (id: string) => {
 
   &:hover {
     box-shadow: 0 2px 12px 0 $my-shadow-color;
+  }
+
+  // 拖着标签悬在卡片上时给个虚线框，提示松手就会加到这个标签
+  &.is-drag-over {
+    outline: 2px dashed var(--el-color-primary);
+    outline-offset: 2px;
   }
 
   // 左侧封面
