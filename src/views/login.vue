@@ -1,7 +1,7 @@
 <template>
   <div class="login-page">
     <div class="login-card">
-      <h1 class="title">逸刻博客后台</h1>
+      <h1 class="title">xiaolinlinの博客后台</h1>
       <p class="subtitle">登录后管理文章、图库与留言</p>
 
       <el-form

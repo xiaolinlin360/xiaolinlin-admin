@@ -53,7 +53,7 @@ interface Props {
   initialAvatarUrl?: string
 }
 const props = withDefaults(defineProps<Props>(), {
-  title: '逸刻博客后台',
+  title: 'xiaolinlinの博客后台',
   initialLogoUrl: '',
   initialAvatarUrl: '',
 })
