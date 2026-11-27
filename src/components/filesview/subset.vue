@@ -44,7 +44,7 @@
       <el-input
         v-model="inputValue"
         placeholder="请输入"
-        :maxlength="6"
+        :maxlength="16"
         show-word-limit
         class="custom-input" />
     </div>
